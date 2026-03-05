@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPCR QC Audit</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-title">
+        <span class="title-main">SPCR QC Audit</span>
+        <span class="title-sub">System Performance Claim Request</span>
+      </div>
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="audit">New Audit</button>
+        <button class="tab-btn" data-tab="history">Audit History</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- ── New Audit Tab ─────────────────────────────────────── -->
+    <div id="tab-audit" class="tab-panel active">
+      <div id="audit-form-container"></div>
+    </div>
+
+    <!-- ── History Tab ──────────────────────────────────────── -->
+    <div id="tab-history" class="tab-panel hidden">
+      <div class="history-header">
+        <h2>Previous Audits</h2>
+        <button class="btn-refresh" id="refresh-history">↻ Refresh</button>
+      </div>
+      <div id="history-container">
+        <p class="loading-text">Loading audits…</p>
+      </div>
+    </div>
+
+    <!-- ── Detail Modal ──────────────────────────────────────── -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+      <div class="modal-box">
+        <button class="modal-close" id="modal-close">✕</button>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="SPCR Audit.js"></script>
+</body>
+</html>
