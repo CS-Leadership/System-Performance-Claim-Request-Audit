@@ -2,7 +2,7 @@
    SPCR Audit.js  —  Frontend Logic
    ============================================================ */
 
-const API = 'http://localhost:3000/api';
+const API = '/api';
 
 const QC_CHECKS = [
   { id: 1,  label: 'Task Completed' },
