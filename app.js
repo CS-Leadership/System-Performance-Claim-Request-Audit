@@ -22,8 +22,7 @@ db.exec(`
     notes       TEXT NOT NULL,
     submitted_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
-  -- Add reviewer column if upgrading from old schema
-  ALTER TABLE audits ADD COLUMN reviewer TEXT NOT NULL DEFAULT '' ;
+
 `);
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
