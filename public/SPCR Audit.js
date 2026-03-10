@@ -2,7 +2,7 @@
    SPCR Audit.js  —  Frontend Logic
    ============================================================ */
 
-const API = '/api';
+const API = window.location.origin + '/api';
 
 const QC_CHECKS = [
   { id: 1,  label: 'Task Completed' },
@@ -65,13 +65,14 @@ function renderAuditForm(submitted = false) {
   if (submitted) {
     const projectId  = document.getElementById('field-project-id')?.value || '—';
     const specialist = document.getElementById('field-specialist')?.value || '—';
+    const reviewer   = document.getElementById('field-reviewer')?.value || '—';
     const reviewDate = document.getElementById('field-review-date')?.value || '—';
     const failCount  = Object.values(state.results).filter(v => v === 'fail').length;
 
     container.innerHTML = `
       <div class="success-banner">
         <h3>✓ Audit Submitted</h3>
-        <p>Project <span>${projectId}</span> &nbsp;·&nbsp; Reviewed by <span>${specialist}</span> &nbsp;·&nbsp; <span>${reviewDate}</span></p>
+        <p>Project <span>${projectId}</span> &nbsp;·&nbsp; Processed by <span>${specialist}</span> &nbsp;·&nbsp; Reviewed by <span>${reviewer}</span> &nbsp;·&nbsp; <span>${reviewDate}</span></p>
         <p>Final Score: <span style="color:${color};font-weight:700">${passCount}/${total}</span>
           ${failCount > 0 ? `<span style="color:#f87171;margin-left:1rem">${failCount} item(s) failed</span>` : ''}
         </p>
@@ -83,7 +84,7 @@ function renderAuditForm(submitted = false) {
 
   container.innerHTML = `
     <!-- Meta fields -->
-    <div class="meta-grid">
+    <div class="meta-grid" style="grid-template-columns: repeat(4, 1fr)">
       <div class="meta-field">
         <label for="field-review-date">QC Review Date</label>
         <input type="date" id="field-review-date" />
@@ -94,7 +95,11 @@ function renderAuditForm(submitted = false) {
       </div>
       <div class="meta-field">
         <label for="field-specialist">Claim Processing Specialist</label>
-        <input type="text" id="field-specialist" placeholder="Full name" />
+        <input type="text" id="field-specialist" placeholder="Who processed the claim" />
+      </div>
+      <div class="meta-field">
+        <label for="field-reviewer">QC Reviewer</label>
+        <input type="text" id="field-reviewer" placeholder="Who is reviewing" />
       </div>
     </div>
 
@@ -162,21 +167,24 @@ function renderCheckRow(check) {
 }
 
 // ─── Restore meta fields after re-render ─────────────────────────────────────
-const _meta = { reviewDate: '', projectId: '', specialist: '' };
+const _meta = { reviewDate: '', projectId: '', specialist: '', reviewer: '' };
 
 function saveMetaFields() {
   _meta.reviewDate = document.getElementById('field-review-date')?.value || '';
   _meta.projectId  = document.getElementById('field-project-id')?.value || '';
   _meta.specialist = document.getElementById('field-specialist')?.value || '';
+  _meta.reviewer   = document.getElementById('field-reviewer')?.value || '';
 }
 
 function restoreMetaFields() {
   const rd = document.getElementById('field-review-date');
   const pi = document.getElementById('field-project-id');
   const sp = document.getElementById('field-specialist');
+  const rv = document.getElementById('field-reviewer');
   if (rd) rd.value = _meta.reviewDate;
   if (pi) pi.value = _meta.projectId;
   if (sp) sp.value = _meta.specialist;
+  if (rv) rv.value = _meta.reviewer;
 }
 
 // ─── Interactions ─────────────────────────────────────────────────────────────
@@ -197,6 +205,7 @@ function resetForm() {
   _meta.reviewDate = '';
   _meta.projectId  = '';
   _meta.specialist = '';
+  _meta.reviewer   = '';
   renderAuditForm();
 }
 
@@ -205,9 +214,10 @@ async function submitAudit() {
   const reviewDate = document.getElementById('field-review-date')?.value;
   const projectId  = document.getElementById('field-project-id')?.value;
   const specialist = document.getElementById('field-specialist')?.value;
+  const reviewer   = document.getElementById('field-reviewer')?.value;
 
-  if (!reviewDate || !projectId || !specialist) {
-    alert('Please fill in QC Review Date, Project ID, and Specialist before submitting.');
+  if (!reviewDate || !projectId || !specialist || !reviewer) {
+    alert('Please fill in QC Review Date, Project ID, Claim Processing Specialist, and QC Reviewer before submitting.');
     return;
   }
 
@@ -217,6 +227,7 @@ async function submitAudit() {
     review_date: reviewDate,
     project_id:  projectId,
     specialist,
+    reviewer,
     score:   passCount,
     total:   QC_CHECKS.length,
     results: state.results,
@@ -263,7 +274,8 @@ async function loadHistory() {
           <tr>
             <th>#</th>
             <th>Project ID</th>
-            <th>Specialist</th>
+            <th>Claim Processor</th>
+            <th>QC Reviewer</th>
             <th>Review Date</th>
             <th>Score</th>
             <th>Submitted</th>
@@ -278,6 +290,7 @@ async function loadHistory() {
                 <td style="color:var(--muted)">${row.id}</td>
                 <td>${row.project_id}</td>
                 <td>${row.specialist}</td>
+                <td>${row.reviewer || '—'}</td>
                 <td>${row.review_date}</td>
                 <td><span class="${badgeClass(pct)}">${row.score}/${row.total} (${pct}%)</span></td>
                 <td style="color:var(--muted);font-size:0.72rem">${formatDate(row.submitted_at)}</td>
@@ -311,7 +324,7 @@ async function viewAudit(id) {
     content.innerHTML = `
       <div class="modal-title">Audit #${data.id} — ${data.project_id}</div>
       <div class="modal-meta">
-        Specialist: <span>${data.specialist}</span> &nbsp;·&nbsp;
+        Processor: <span>${data.specialist}</span> &nbsp;·&nbsp; Reviewer: <span>${data.reviewer || '—'}</span> &nbsp;·&nbsp;
         Review Date: <span>${data.review_date}</span> &nbsp;·&nbsp;
         Submitted: <span>${formatDate(data.submitted_at)}</span> &nbsp;·&nbsp;
         Score: <span style="color:${color};font-weight:700">${data.score}/${data.total} (${pct}%)</span>

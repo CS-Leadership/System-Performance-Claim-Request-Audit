@@ -15,12 +15,15 @@ db.exec(`
     review_date TEXT NOT NULL,
     project_id  TEXT NOT NULL,
     specialist  TEXT NOT NULL,
+    reviewer    TEXT NOT NULL DEFAULT '',
     score       INTEGER NOT NULL,
     total       INTEGER NOT NULL,
     results     TEXT NOT NULL,
     notes       TEXT NOT NULL,
     submitted_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  -- Add reviewer column if upgrading from old schema
+  ALTER TABLE audits ADD COLUMN reviewer TEXT NOT NULL DEFAULT '' ;
 `);
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -32,21 +35,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Submit a new audit
 app.post('/api/audits', (req, res) => {
-  const { review_date, project_id, specialist, score, total, results, notes } = req.body;
+  const { review_date, project_id, specialist, reviewer, score, total, results, notes } = req.body;
 
   if (!review_date || !project_id || !specialist) {
     return res.status(400).json({ error: 'review_date, project_id, and specialist are required.' });
   }
 
   const stmt = db.prepare(`
-    INSERT INTO audits (review_date, project_id, specialist, score, total, results, notes, submitted_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    INSERT INTO audits (review_date, project_id, specialist, reviewer, score, total, results, notes, submitted_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
   `);
 
   const info = stmt.run(
     review_date,
     project_id,
     specialist,
+    reviewer || '',
     score,
     total,
     JSON.stringify(results),
@@ -59,7 +63,7 @@ app.post('/api/audits', (req, res) => {
 // Get all audits (summary list)
 app.get('/api/audits', (req, res) => {
   const rows = db.prepare(`
-    SELECT id, review_date, project_id, specialist, score, total, submitted_at
+    SELECT id, review_date, project_id, specialist, reviewer, score, total, submitted_at
     FROM audits
     ORDER BY submitted_at DESC
   `).all();
